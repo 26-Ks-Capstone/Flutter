@@ -3,6 +3,7 @@ import '../../config/palette.dart';
 import '../../models/destination_model.dart';
 import '../profile/profile_edit_page.dart';
 import '../ai/ai_planner_page.dart';
+import '../auth/login_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -112,28 +113,44 @@ class _MainPageState extends State<MainPage> {
                   ),
                 ],
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ProfileEditPage()),
-                  );
-                },
-                child: Container(
-                  width: 45,
-                  height: 45,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF8866FF), Color(0xFF6600FF)],
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(builder: (context) => const LoginPage()),
+                        (route) => false,
+                      );
+                    },
+                    icon: const Icon(Icons.logout, color: Palette.mutedForeground, size: 22),
+                    tooltip: '로그아웃',
+                  ),
+                  const SizedBox(width: 8),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const ProfileEditPage()),
+                      );
+                    },
+                    child: Container(
+                      width: 45,
+                      height: 45,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [Color(0xFF8866FF), Color(0xFF6600FF)],
+                        ),
+                      ),
+                      child: const Center(
+                        child: Text('J', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                      ),
                     ),
                   ),
-                  child: const Center(
-                    child: Text('J', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                  ),
-                ),
+                ],
               ),
             ],
           ),

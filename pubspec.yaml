@@ -38,6 +38,7 @@ dependencies:
   # 여기에 provider를 추가해줘! (줄 간격 주의)
   provider: ^6.1.1
   google_generative_ai: ^0.4.0  # 제미나이 공식 패키지
+  flutter_secure_storage: ^9.0.0
 
 
 dev_dependencies:
