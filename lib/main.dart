@@ -5,6 +5,7 @@ import 'config/palette.dart';
 import 'features/auth/ui/splash_page.dart';
 import 'features/ai/ai_planner_provider.dart';
 import 'features/auth/provider/auth_provider.dart';
+import 'features/guide/provider/guide_provider.dart';
 
 void main() {
   // 앱 시작 전 바인딩 초기화 (보안 저장소 등 비동기 작업 대비)
@@ -15,6 +16,7 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => AIPlannerProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => GuideProvider()),
       ],
       child: const TravelPlannerApp(),
     ),
