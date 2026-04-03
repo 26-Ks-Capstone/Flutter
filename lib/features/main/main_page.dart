@@ -4,6 +4,8 @@ import '../../models/destination_model.dart';
 import '../profile/profile_edit_page.dart';
 import '../ai/ai_planner_page.dart';
 import '../auth/login_page.dart';
+import '../guide/ui/guide_explore_page.dart';
+import '../guide/ui/guide_register_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -14,7 +16,6 @@ class MainPage extends StatefulWidget {
 
 class _MainPageState extends State<MainPage> {
   int _selectedIndex = 0;
-  bool _isGuideRegistered = false;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -29,7 +30,9 @@ class _MainPageState extends State<MainPage> {
       _buildHomeScreen(),
       const AIPlannerPage(),
       const Center(child: Text('플래너 상세')),
-      const Center(child: Text('가이드 화면')),
+    //  const Center(child: Text('가이드 화면')),
+      const GuideExplorePage(),
+      const GuideRegisterPage(),
       const Center(child: Text('마이 페이지')),
     ];
 
@@ -50,28 +53,33 @@ class _MainPageState extends State<MainPage> {
         unselectedFontSize: 12,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: [
-          const BottomNavigationBarItem(
+        items: const [
+          BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
             activeIcon: Icon(Icons.home),
             label: '홈',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.chat_bubble_outline),
             activeIcon: Icon(Icons.chat_bubble),
             label: 'AI 플래너',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
             icon: Icon(Icons.assignment_outlined),
             activeIcon: Icon(Icons.assignment),
             label: '플래너 상세',
           ),
           BottomNavigationBarItem(
-            icon: const Icon(Icons.explore_outlined),
-            activeIcon: const Icon(Icons.explore),
-            label: _isGuideRegistered ? '가이드 등록' : '가이드 탐색',
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
+            label: '가이드 탐색',
           ),
-          const BottomNavigationBarItem(
+          BottomNavigationBarItem(
+            icon: Icon(Icons.edit_note_outlined),
+            activeIcon: Icon(Icons.edit_note),
+            label: '가이드 등록',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.person_outline),
             activeIcon: Icon(Icons.person),
             label: '마이',
@@ -154,9 +162,9 @@ class _MainPageState extends State<MainPage> {
               ),
             ],
           ),
-          
+
           const SizedBox(height: 25),
-          
+
           InkWell(
             onTap: () => _onItemTapped(1),
             borderRadius: BorderRadius.circular(30),
@@ -173,7 +181,7 @@ class _MainPageState extends State<MainPage> {
                   const SizedBox(width: 10),
                   const Expanded(
                     child: Text(
-                      'AI에게 여행 일정을 물어보세요', 
+                      'AI에게 여행 일정을 물어보세요',
                       style: TextStyle(color: Palette.mutedForeground)
                     ),
                   ),
@@ -195,9 +203,9 @@ class _MainPageState extends State<MainPage> {
               ),
             ),
           ),
-          
+
           const SizedBox(height: 30),
-          
+
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -214,9 +222,9 @@ class _MainPageState extends State<MainPage> {
             ],
           ),
           _buildLargeCard(topDestination),
-          
+
           const SizedBox(height: 30),
-          
+
           const Text('인기 여행지', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Palette.foreground)),
           const SizedBox(height: 16),
           GridView.builder(
