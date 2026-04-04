@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../config/palette.dart';
 import '../../models/destination_model.dart';
-import '../profile/profile_edit_page.dart';
+import '../profile/ui/profile_edit_page.dart';
 import '../ai/ai_planner_page.dart';
 import '../auth/login_page.dart';
 import '../guide/ui/guide_explore_page.dart';
 import '../guide/ui/guide_register_page.dart';
+import '../profile/ui/my_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
@@ -33,7 +34,8 @@ class _MainPageState extends State<MainPage> {
     //  const Center(child: Text('가이드 화면')),
       const GuideExplorePage(),
       const GuideRegisterPage(),
-      const Center(child: Text('마이 페이지')),
+    //  const Center(child: Text('마이 페이지')),
+      const MyPage(),
     ];
 
     return Scaffold(
@@ -137,10 +139,7 @@ class _MainPageState extends State<MainPage> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ProfileEditPage()),
-                      );
+                      _onItemTapped(5);
                     },
                     child: Container(
                       width: 45,
@@ -154,7 +153,14 @@ class _MainPageState extends State<MainPage> {
                         ),
                       ),
                       child: const Center(
-                        child: Text('J', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
+                        child: Text(
+                          'J',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -340,3 +346,4 @@ class _MainPageState extends State<MainPage> {
     );
   }
 }
+
