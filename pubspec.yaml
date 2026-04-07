@@ -40,6 +40,8 @@ dependencies:
   google_generative_ai: ^0.4.0  # 제미나이 공식 패키지
   flutter_secure_storage: ^9.0.0
 
+  dio: ^5.4.1  # dio 패키지 추가
+  http: ^1.2.1
 
 dev_dependencies:
   flutter_test:

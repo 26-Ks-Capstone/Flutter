@@ -1,39 +1,61 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:capstone/features/core/network/dio_client.dart';
+import 'package:dio/dio.dart';
 
 enum MessageRole { ai, user }
 
 class ChatMessage {
   final String content;
   final MessageRole role;
-  final PlanSummary? planSummary;
+  final PlanData? planData;
 
   ChatMessage({
     required this.content,
     required this.role,
-    this.planSummary,
+    this.planData,
   });
 }
 
-class PlanSummary {
-  final String duration;
-  final String estimatedCost;
-  final int courseCount;
-  final List<String> highlights;
+class PlanData {
+  final String title;
+  final String region;
+  final String startDate;
+  final String endDate;
+  final List<PlanCourse> courses;
+  final Map<String, dynamic> originalJson; // 저장을 위해 전체 원본 데이터 보관
 
-  PlanSummary({
+  PlanData({
+    required this.title,
+    required this.region,
+    required this.startDate,
+    required this.endDate,
+    required this.courses,
+    required this.originalJson,
+  });
+}
+
+class PlanCourse {
+  final int dayNumber;
+  final String time;
+  final String place;
+  final String duration;
+  final IconData icon;
+
+  PlanCourse({
+    required this.dayNumber,
+    required this.time,
+    required this.place,
     required this.duration,
-    required this.estimatedCost,
-    required this.courseCount,
-    required this.highlights,
+    required this.icon,
   });
 }
 
 class AIPlannerProvider with ChangeNotifier {
+  static const String _welcomeMsg = '안녕하세요! AI 여행 플래너입니다. 가고 싶은 여행지, 일정, 취향을 자유롭게 말씀해주세요. 최적의 이동경로와 체류 시간을 자동으로 계산해 드릴게요!';
+
   final List<ChatMessage> _messages = [
-    ChatMessage(
-      content: '안녕하세요! AI 여행 플래너입니다. 가고 싶은 여행지, 일정, 취향을 자유롭게 말씀해주세요. 최적의 이동경로와 체류 시간을 자동으로 계산해 드릴게요!',
-      role: MessageRole.ai,
-    ),
+    ChatMessage(content: _welcomeMsg, role: MessageRole.ai),
   ];
 
   List<ChatMessage> get messages => _messages;
@@ -41,41 +63,99 @@ class AIPlannerProvider with ChangeNotifier {
   bool _isLoading = false;
   bool get isLoading => _isLoading;
 
-  void sendMessage(String text) async {
+  void resetChat() {
+    _messages.clear();
+    _messages.add(ChatMessage(content: _welcomeMsg, role: MessageRole.ai));
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> sendMessage(String text, List<String> categories) async {
     if (text.trim().isEmpty) return;
 
-    // 사용자 메시지 추가
     _messages.add(ChatMessage(content: text, role: MessageRole.user));
     notifyListeners();
 
     _isLoading = true;
     notifyListeners();
 
-    // TODO: 제미나이 API 연동 예정 (현재는 Mock 응답)
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await DioClient.instance.post(
+        '/api/v1/planner/generate',
+        data: {
+          'prompt': text,
+          'categories': categories,
+        },
+      );
 
-    // AI 응답 및 일정 요약 데이터 생성 (Mock)
-    final aiResponse = ChatMessage(
-      content: '요청하신 내용을 바탕으로 최적의 일정을 만들어보았습니다! 마음에 드시는지 확인해보세요.',
-      role: MessageRole.ai,
-      planSummary: PlanSummary(
-        duration: '2박 3일',
-        estimatedCost: '약 450,000원',
-        courseCount: 8,
-        highlights: ['해운대 야경', '광안리 맛집', '감천문화마을'],
-      ),
-    );
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        Map<String, dynamic> decoded = responseData is String ? jsonDecode(responseData) : responseData;
 
-    _messages.add(aiResponse);
-    _isLoading = false;
-    notifyListeners();
+        if (decoded['status'] == 'success' && decoded['data'] != null) {
+          final data = decoded['data'];
+          List rawCourses = data['generated_courses'] ?? [];
+          
+          List<PlanCourse> parsedCourses = rawCourses.map((c) {
+            IconData icon = Icons.location_on;
+            String category = (c['category_type'] as List?)?.first ?? '';
+            if (category.contains('식당') || category.contains('맛집')) icon = Icons.restaurant;
+            else if (category.contains('숙박') || category.contains('호텔')) icon = Icons.hotel;
+            else if (category.contains('카페')) icon = Icons.local_cafe;
+
+            return PlanCourse(
+              dayNumber: c['day_number'] ?? 1,
+              time: c['start_time'] ?? '00:00',
+              place: c['place'] ?? '장소명 없음',
+              duration: '${c['duration_minutes'] ?? 0}분',
+              icon: icon,
+            );
+          }).toList();
+
+          final planData = PlanData(
+            title: data['title'] ?? '생성된 여행 일정입니다.',
+            region: data['region'] ?? '',
+            startDate: data['start_date'] ?? '',
+            endDate: data['end_date'] ?? '',
+            courses: parsedCourses,
+            originalJson: data, // 저장 API에서 그대로 사용할 데이터 본문
+          );
+
+          _messages.add(ChatMessage(
+            content: planData.title,
+            role: MessageRole.ai,
+            planData: planData,
+          ));
+        } else {
+          _messages.add(ChatMessage(content: "죄송합니다. 일정을 생성 중에 오류가 발생했습니다.", role: MessageRole.ai));
+        }
+      }
+    } on DioException catch (e) {
+      _messages.add(ChatMessage(content: '에러: ${e.message}', role: MessageRole.ai));
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  // 플래너 저장 Mock 함수
-  Future<bool> savePlanner(PlanSummary summary) async {
-    // DB 저장 로직 시뮬레이션
-    await Future.delayed(const Duration(seconds: 1));
-    print('플래너 저장 완료: ${summary.duration} 일정');
-    return true;
+  // 상세 플래너 저장 API 호출 (백엔드 DTO 규격 준수)
+  Future<bool> savePlanner(PlanData data) async {
+    try {
+      final response = await DioClient.instance.post(
+        '/api/v1/planner/save',
+        data: {
+          'status': 'success',
+          'data': data.originalJson, // AI가 생성했던 그 JSON 구조 그대로 전송
+        },
+      );
+
+      return response.statusCode == 200 || response.statusCode == 201;
+    } on DioException catch (e) {
+      debugPrint('❌ 상세 플래너 저장 실패: ${e.response?.statusCode} | ${e.message}');
+      return false;
+    } catch (e) {
+      debugPrint('❌ 알 수 없는 저장 에러: $e');
+      return false;
+    }
   }
 }
