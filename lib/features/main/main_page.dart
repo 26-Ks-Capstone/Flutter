@@ -7,18 +7,19 @@ import '../auth/login_page.dart';
 import '../guide/ui/guide_explore_page.dart';
 import '../guide/ui/guide_register_page.dart';
 import '../profile/ui/my_page.dart';
+import '../planner_detail/ui/planner_detail_page.dart';
 
 class MainPage extends StatefulWidget {
   const MainPage({super.key});
 
   @override
-  State<MainPage> createState() => _MainPageState();
+  State<MainPage> createState() => MainPageState(); // [수정] 언더바 제거하여 외부에서 접근 가능하게 변경
 }
 
-class _MainPageState extends State<MainPage> {
+class MainPageState extends State<MainPage> { // [수정] _MainPageState -> MainPageState
   int _selectedIndex = 0;
 
-  void _onItemTapped(int index) {
+  void onItemTapped(int index) { // [수정] _onItemTapped -> onItemTapped (공개 메서드화)
     setState(() {
       _selectedIndex = index;
     });
@@ -26,15 +27,12 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // _pages 변수를 제거하고 build 메서드 내에서 리스트를 직접 정의하여 초기화 에러를 원천 차단합니다.
     final List<Widget> pages = [
       _buildHomeScreen(),
       const AIPlannerPage(),
-      const Center(child: Text('플래너 상세')),
-    //  const Center(child: Text('가이드 화면')),
+      const PlannerDetailPage(),
       const GuideExplorePage(),
       const GuideRegisterPage(),
-    //  const Center(child: Text('마이 페이지')),
       const MyPage(),
     ];
 
@@ -54,7 +52,7 @@ class _MainPageState extends State<MainPage> {
         selectedFontSize: 12,
         unselectedFontSize: 12,
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap: onItemTapped,
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.home_outlined),
@@ -139,7 +137,7 @@ class _MainPageState extends State<MainPage> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () {
-                      _onItemTapped(5);
+                      onItemTapped(5);
                     },
                     child: Container(
                       width: 45,
@@ -172,7 +170,7 @@ class _MainPageState extends State<MainPage> {
           const SizedBox(height: 25),
 
           InkWell(
-            onTap: () => _onItemTapped(1),
+            onTap: () => onItemTapped(1),
             borderRadius: BorderRadius.circular(30),
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -271,7 +269,7 @@ class _MainPageState extends State<MainPage> {
               gradient: LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                colors: [Colors.transparent, Colors.black.withValues(alpha: 0.7)],
+                colors: [Colors.transparent, Colors.black.withOpacity(0.7)],
               ),
             ),
           ),
@@ -346,4 +344,3 @@ class _MainPageState extends State<MainPage> {
     );
   }
 }
-

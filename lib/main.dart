@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'config/palette.dart';
-// [수정] SplashPage 임포트 (경로는 네 폴더 구조에 맞춰 확인해봐!)
-import 'features/auth/ui/splash_page.dart';
-import 'features/ai/ai_planner_provider.dart';
-import 'features/auth/provider/auth_provider.dart';
-import 'features/guide/provider/guide_provider.dart';
+import 'package:capstone/config/palette.dart';
+import 'package:capstone/features/auth/ui/splash_page.dart';
+import 'package:capstone/features/ai/ai_planner_provider.dart';
+import 'package:capstone/features/auth/provider/auth_provider.dart';
+import 'package:capstone/features/guide/provider/guide_provider.dart';
+import 'package:capstone/features/planner_detail/provider/planner_detail_provider.dart';
+import 'package:capstone/features/planner_detail/provider/itinerary_detail_provider.dart'; // [추가]
 
 void main() {
-  // 앱 시작 전 바인딩 초기화 (보안 저장소 등 비동기 작업 대비)
   WidgetsFlutterBinding.ensureInitialized();
 
   runApp(
@@ -17,6 +17,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => AIPlannerProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => GuideProvider()),
+        ChangeNotifierProvider(create: (_) => PlannerProvider()),
+        ChangeNotifierProvider(create: (_) => ItineraryDetailProvider()), // [추가] 상세 플래너 프로바이더
       ],
       child: const TravelPlannerApp(),
     ),
