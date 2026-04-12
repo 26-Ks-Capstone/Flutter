@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../auth/login_page.dart';
-import '../../guide/ui/guide_register_page.dart';
+import '../../guider/ui/guide_registration_page.dart'; // [수정] 새로운 가이드 등록 페이지 임포트
 import 'app_settings_page.dart';
 import 'liked_trips_page.dart';
 import 'my_reviews_page.dart';
@@ -365,10 +365,11 @@ class _MyPageState extends State<MyPage> {
   Widget _buildLocalGuideBanner(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        // [수정] 새로운 가이드 등록 페이지로 이동
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => const GuideRegisterPage(),
+            builder: (_) => const GuideRegistrationPage(),
           ),
         );
       },

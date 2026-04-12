@@ -4,7 +4,7 @@ import '../storage/auth_storage.dart';
 
 class DioClient {
   // 실기기 테스트를 위한 노트북 로컬 IP 설정
-  static const String _laptopIp = '172.30.1.89';
+  static const String _laptopIp = '172.30.1.46';
   static const String _baseUrl = 'http://$_laptopIp:8080';
 
   static final Dio _dio = Dio(BaseOptions(
