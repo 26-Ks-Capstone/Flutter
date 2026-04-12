@@ -6,7 +6,8 @@ import 'package:capstone/features/ai/ai_planner_provider.dart';
 import 'package:capstone/features/auth/provider/auth_provider.dart';
 import 'package:capstone/features/guide/provider/guide_provider.dart';
 import 'package:capstone/features/planner_detail/provider/planner_detail_provider.dart';
-import 'package:capstone/features/planner_detail/provider/itinerary_detail_provider.dart'; // [추가]
+import 'package:capstone/features/planner_detail/provider/itinerary_detail_provider.dart';
+import 'package:capstone/features/guider/provider/guide_registration_provider.dart'; // [추가]
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,8 @@ void main() {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => GuideProvider()),
         ChangeNotifierProvider(create: (_) => PlannerProvider()),
-        ChangeNotifierProvider(create: (_) => ItineraryDetailProvider()), // [추가] 상세 플래너 프로바이더
+        ChangeNotifierProvider(create: (_) => ItineraryDetailProvider()),
+        ChangeNotifierProvider(create: (_) => GuideRegistrationProvider()), // [추가]
       ],
       child: const TravelPlannerApp(),
     ),

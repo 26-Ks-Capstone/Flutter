@@ -25,18 +25,35 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
   @override
   Widget build(BuildContext context) {
     final detailProvider = context.watch<ItineraryDetailProvider>();
-    final detail = detailProvider.itineraryDetail != null 
-        ? ItineraryDetailResponse.fromJson(detailProvider.itineraryDetail!) 
-        : null;
-
+    
     return Scaffold(
       backgroundColor: Palette.background,
       body: detailProvider.isLoading
           ? const Center(child: CircularProgressIndicator(color: Color(0xFF2962FF)))
-          : detail == null
-              ? const Center(child: Text('일정 정보를 불러올 수 없습니다.'))
-              : _buildContent(detail),
-      bottomNavigationBar: _buildBottomBar(),
+          : detailProvider.errorMessage != null
+              ? _buildErrorState(detailProvider.errorMessage!)
+              : detailProvider.detail == null
+                  ? const Center(child: Text('일정 정보를 불러올 수 없습니다.'))
+                  : _buildContent(detailProvider.detail!),
+      bottomNavigationBar: detailProvider.detail != null ? _buildBottomBar() : null,
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+          const SizedBox(height: 16),
+          Text(message, style: const TextStyle(color: Palette.mutedForeground)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.read<ItineraryDetailProvider>().fetchItineraryDetail(widget.itineraryId),
+            child: const Text('다시 시도'),
+          )
+        ],
+      ),
     );
   }
 
@@ -203,7 +220,6 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
   }
 
   Widget _buildTimelineTile(ItineraryDetailItem item, bool isLast) {
-    // 카테고리에 따른 색상 및 아이콘 설정
     Color bgColor = const Color(0xFFE3F2FD);
     Color iconColor = const Color(0xFF2962FF);
     IconData icon = Icons.location_on;
@@ -276,20 +292,6 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
                           ),
                           const SizedBox(height: 8),
                           Text(item.description, style: const TextStyle(color: Colors.black87, fontSize: 13, height: 1.4)),
-                          if (tag == '식사' || item.placeName.contains('시장')) ...[
-                            const SizedBox(height: 12),
-                            OutlinedButton.icon(
-                              onPressed: () {},
-                              icon: const Icon(Icons.location_on, size: 14),
-                              label: const Text('부산 상세 정보 보기', style: TextStyle(fontSize: 12)),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFF2962FF),
-                                side: const BorderSide(color: Color(0xFF2962FF)),
-                                padding: const EdgeInsets.symmetric(horizontal: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                              ),
-                            ),
-                          ]
                         ],
                       ),
                     ),
