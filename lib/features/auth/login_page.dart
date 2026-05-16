@@ -5,6 +5,7 @@ import '../main/main_page.dart';
 import 'provider/auth_provider.dart';
 import 'package:capstone/features/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
+import 'signup_page.dart'; // 회원가입 추가
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -173,7 +174,26 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 12),
                     _buildSocialButton(label: 'Google로 시작하기', icon: Icons.g_mobiledata, color: Palette.secondary, textColor: Colors.black87, isGoogle: true),
                     const SizedBox(height: 32),
-                    Center(child: RichText(text: const TextSpan(style: TextStyle(color: Colors.grey, fontSize: 14), children: [TextSpan(text: '아직 계정이 없으신가요? '), TextSpan(text: '회원가입', style: TextStyle(color: Color(0xFF0055FF), fontWeight: FontWeight.bold))]))),
+                Center(
+                  child: GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SignUpPage()),
+                    ),
+                    child: RichText(
+                      text: const TextSpan(
+                        style: TextStyle(color: Colors.grey, fontSize: 14),
+                        children: [
+                          TextSpan(text: '아직 계정이 없으신가요? '),
+                          TextSpan(
+                            text: '회원가입',
+                            style: TextStyle(color: Color(0xFF0055FF), fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
                   ],
                 ),
               ),

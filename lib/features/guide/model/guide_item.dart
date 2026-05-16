@@ -28,10 +28,15 @@ class GuideScheduleItem {
       description: map['description'] ?? '',
     );
   }
+
+  factory GuideScheduleItem.fromJson(Map<String, dynamic> json) =>
+      GuideScheduleItem.fromMap(json);
 }
 
 class GuideItem {
   final int id;
+  final String serviceId;
+  final String guideId; // 가이드 유저 ID (채팅/리뷰용)
   final String guideName;
   final String title;
   final String description;
@@ -44,7 +49,7 @@ class GuideItem {
   final List<String> tags;
   final String imageUrl;
   final bool isVerified;
-
+  final bool isPublished; // 게시 여부
   final bool hasOwnCar;
   final List<String> languages;
   final String meetingPlace;
@@ -54,6 +59,8 @@ class GuideItem {
 
   GuideItem({
     required this.id,
+    required this.serviceId,
+    required this.guideId,
     required this.guideName,
     required this.title,
     required this.description,
@@ -66,6 +73,7 @@ class GuideItem {
     required this.tags,
     required this.imageUrl,
     required this.isVerified,
+    required this.isPublished,
     required this.hasOwnCar,
     required this.languages,
     required this.meetingPlace,
@@ -74,8 +82,61 @@ class GuideItem {
     required this.schedules,
   });
 
+  factory GuideItem.fromJson(Map<String, dynamic> json) {
+    final int durationMinutes = (json['durationMinutes'] as num?)?.toInt() ?? 0;
+    String durationText = '';
+    if (durationMinutes > 0) {
+      final int hours = durationMinutes ~/ 60;
+      final int mins = durationMinutes % 60;
+      if (hours > 0 && mins > 0) {
+        durationText = '$hours시간 $mins분';
+      } else if (hours > 0) {
+        durationText = '$hours시간';
+      } else {
+        durationText = '$mins분';
+      }
+    }
+
+    final int maxCapacity = (json['maxCapacity'] as num?)?.toInt() ?? 0;
+    final String peopleText = maxCapacity > 0 ? '0/$maxCapacity명' : '';
+
+    final int price = (json['pricePerPerson'] as num?)?.toInt() ?? 0;
+
+    final String rawServiceId = json['serviceId']?.toString() ?? '';
+
+    return GuideItem(
+      id: rawServiceId.hashCode,
+      serviceId: rawServiceId,
+      guideId: json['guideUserId']?.toString() ?? '',
+      guideName: json['guideName'] ?? '',
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      region: json['region'] ?? '',
+      rating: 0.0,
+      reviewCount: 0,
+      price: price,
+      durationText: durationText,
+      peopleText: peopleText,
+      tags: [],
+      imageUrl: '',
+      isVerified: true,
+      isPublished: json['isPublished'] ?? false,                       // 게시 여부
+      hasOwnCar: json['hasCar'] ?? false,
+      languages: List<String>.from(json['availableLanguages'] ?? []),
+      meetingPlace: json['meetingPoint'] ?? '',
+      meetingGuide: json['meetingPointDesc'] ?? '',
+      includedItems: List<String>.from(json['includedItems'] ?? []),
+      schedules: (json['schedules'] as List?)
+          ?.map((e) => GuideScheduleItem.fromJson(e as Map<String, dynamic>))
+          .toList() ??
+          [],
+    );
+  }
+
   GuideItem copyWith({
     int? id,
+    String? serviceId,
+    String? guideId,
     String? guideName,
     String? title,
     String? description,
@@ -88,6 +149,7 @@ class GuideItem {
     List<String>? tags,
     String? imageUrl,
     bool? isVerified,
+    bool? isPublished,
     bool? hasOwnCar,
     List<String>? languages,
     String? meetingPlace,
@@ -97,6 +159,8 @@ class GuideItem {
   }) {
     return GuideItem(
       id: id ?? this.id,
+      serviceId: serviceId ?? this.serviceId,
+      guideId: guideId ?? this.guideId,
       guideName: guideName ?? this.guideName,
       title: title ?? this.title,
       description: description ?? this.description,
@@ -109,6 +173,7 @@ class GuideItem {
       tags: tags ?? this.tags,
       imageUrl: imageUrl ?? this.imageUrl,
       isVerified: isVerified ?? this.isVerified,
+      isPublished: isPublished ?? this.isPublished,
       hasOwnCar: hasOwnCar ?? this.hasOwnCar,
       languages: languages ?? this.languages,
       meetingPlace: meetingPlace ?? this.meetingPlace,

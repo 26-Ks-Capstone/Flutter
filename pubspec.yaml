@@ -43,6 +43,11 @@ dependencies:
   dio: ^5.4.1  # dio 패키지 추가
   http: ^1.2.1
 
+  stomp_dart_client: ^2.0.0
+  #firebase_core: ^3.0.0
+  #firebase_messaging: ^15.0.0
+  #stomp_dart_client: ^2.0.0  # WebSocket 채팅용
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -58,6 +63,8 @@ dev_dependencies:
 # following page: https://dart.dev/tools/pub/pubspec
 
 # The following section is specific to Flutter packages.
+
+
 flutter:
 
   # The following line ensures that the Material Icons font is

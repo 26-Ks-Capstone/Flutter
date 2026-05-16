@@ -1,22 +1,21 @@
-import 'dart:io';
 import 'package:dio/dio.dart';
 import '../storage/auth_storage.dart';
 
 class DioClient {
-  // 실기기 테스트를 위한 노트북 로컬 IP 설정
-  static const String _laptopIp = '172.30.1.46';
+  static const String _laptopIp = '13.236.175.235';
   static const String _baseUrl = 'http://$_laptopIp:8080';
 
-  static final Dio _dio = Dio(BaseOptions(
-    baseUrl: _baseUrl,
-    connectTimeout: const Duration(seconds: 10),
-    receiveTimeout: const Duration(seconds: 60), // AI 생성 대기 시간 고려
-    contentType: 'application/json',
-  ));
+  static final Dio _dio = _createDio();
 
-  static Dio get instance {
-    _dio.interceptors.clear();
-    _dio.interceptors.add(InterceptorsWrapper(
+  static Dio _createDio() {
+    final dio = Dio(BaseOptions(
+      baseUrl: _baseUrl,
+      connectTimeout: const Duration(seconds: 10),
+      receiveTimeout: const Duration(seconds: 60),
+      contentType: 'application/json',
+    ));
+
+    dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await AuthStorage.getToken();
         if (token != null) {
@@ -33,6 +32,9 @@ class DioClient {
         return handler.next(e);
       },
     ));
-    return _dio;
+
+    return dio;
   }
+
+  static Dio get instance => _dio;
 }

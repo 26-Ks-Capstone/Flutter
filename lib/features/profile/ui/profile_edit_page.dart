@@ -4,14 +4,12 @@ class ProfileEditPage extends StatefulWidget {
   final String initialName;
   final String initialSubtitle;
   final String initialId;
-  final String initialEmail;
 
   const ProfileEditPage({
     super.key,
     required this.initialName,
     required this.initialSubtitle,
     required this.initialId,
-    required this.initialEmail,
   });
 
   @override
@@ -34,7 +32,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     _nameController = TextEditingController(text: widget.initialName);
     _subtitleController = TextEditingController(text: widget.initialSubtitle);
     _idController = TextEditingController(text: widget.initialId);
-    _emailController = TextEditingController(text: widget.initialEmail);
   }
 
   @override

@@ -25,7 +25,6 @@ class Itinerary {
       region: json['region'] ?? '지역 정보 없음',
       startDate: json['startDate'] ?? '', 
       endDate: json['endDate'] ?? '',
-      // details 리스트의 길이를 코스 개수로 사용
       courseCount: (json['details'] as List?)?.length ?? 0,
     );
   }
@@ -46,15 +45,11 @@ class PlannerProvider with ChangeNotifier {
 
     try {
       final response = await _repository.getItineraries();
-      
-      // 백엔드에서 List<Dto>를 직접 반환하므로 response.data가 바로 List인지 확인
       if (response.statusCode == 200) {
-        final List<dynamic> dataList = response.data is List 
-            ? response.data 
+        final List<dynamic> dataList = response.data is List
+            ? response.data
             : (response.data['data'] ?? []);
-            
         _itineraries = dataList.map((item) => Itinerary.fromJson(item)).toList();
-        print('✅ 플래너 목록 로드 성공: ${_itineraries.length}개');
       }
     } catch (e) {
       debugPrint('❌ Error fetching itineraries: $e');

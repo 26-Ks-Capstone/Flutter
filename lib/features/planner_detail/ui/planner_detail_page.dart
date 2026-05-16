@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:capstone/config/palette.dart';
 import '../provider/planner_detail_provider.dart';
+import 'itinerary_detail_page.dart';
 import '../../main/main_page.dart';
-import 'itinerary_detail_page.dart'; // [추가] 상세 페이지 임포트
-
 class PlannerDetailPage extends StatefulWidget {
   const PlannerDetailPage({super.key});
 
@@ -34,14 +33,14 @@ class _PlannerDetailPageState extends State<PlannerDetailPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'AI가 만들어준',
+                'AI와 함께한 나만의 기록',
                 style: TextStyle(color: Palette.mutedForeground, fontSize: 14),
               ),
               RichText(
                 text: const TextSpan(
                   style: TextStyle(color: Palette.foreground, fontSize: 24, fontWeight: FontWeight.bold),
                   children: [
-                    TextSpan(text: '나의 '),
+                    TextSpan(text: '내 '),
                     TextSpan(text: '여행 플랜', style: TextStyle(color: Color(0xFF0055FF))),
                   ],
                 ),
@@ -58,7 +57,6 @@ class _PlannerDetailPageState extends State<PlannerDetailPage> {
               else
                 ...plannerProvider.itineraries.map((itinerary) => Column(
                   children: [
-                    // [수정] 카드 클릭 시 상세 페이지로 이동
                     InkWell(
                       onTap: () {
                         if (itinerary.itineraryId != null) {
@@ -232,9 +230,7 @@ class _PlannerDetailPageState extends State<PlannerDetailPage> {
   }
 
   void _goToAIPlanner() {
-    final mainPageState = context.findAncestorStateOfType<MainPageState>();
-    if (mainPageState != null) {
-      mainPageState.onItemTapped(1);
-    }
+    final mainPage = context.findAncestorStateOfType<MainPageState>();
+    mainPage?.onItemTapped(1);
   }
 }

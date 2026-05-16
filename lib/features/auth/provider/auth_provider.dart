@@ -14,6 +14,15 @@ class AuthProvider extends ChangeNotifier {
   bool _isGuide = false;
   bool get isGuide => _isGuide;
 
+  //가이드 상태 분리
+  bool _isGuideMode = false;
+  bool get isGuideMode => _isGuideMode;
+
+  //가이드 전환 시 상태 업데이트 및 저장
+  void toggleGuideMode() {
+    _isGuideMode = !_isGuideMode;
+    notifyListeners();
+  }
   // 로그인 성공 시 호출하여 상태 업데이트 및 저장
   Future<void> login(Map<String, dynamic> authData) async {
     final String userId = authData['user_id'];
@@ -55,6 +64,7 @@ class AuthProvider extends ChangeNotifier {
     _userId = null;
     _nickname = null;
     _isGuide = false;
+    _isGuideMode = false;
     notifyListeners();
   }
 }

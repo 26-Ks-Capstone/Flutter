@@ -5,8 +5,21 @@ import '../provider/guide_provider.dart';
 import 'guide_apply_page.dart';
 import 'guide_detail_page.dart';
 
-class GuideExplorePage extends StatelessWidget {
+class GuideExplorePage extends StatefulWidget {
   const GuideExplorePage({super.key});
+
+  @override
+  State<GuideExplorePage> createState() => _GuideExplorePageState();
+}
+
+class _GuideExplorePageState extends State<GuideExplorePage> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(
+      () => context.read<GuideProvider>().fetchGuides(),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,15 +33,23 @@ class GuideExplorePage extends StatelessWidget {
           children: [
             _Header(provider: provider),
             Expanded(
-              child: guides.isEmpty
-                  ? const _EmptyState()
-                  : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 20),
-                itemCount: guides.length,
-                itemBuilder: (context, index) {
-                  return _GuideCard(item: guides[index]);
-                },
-              ),
+              child: provider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : provider.errorMessage != null
+                      ? _ErrorState(
+                          message: provider.errorMessage!,
+                          onRetry: () => provider.fetchGuides(),
+                        )
+                      : guides.isEmpty
+                          ? const _EmptyState()
+                          : ListView.builder(
+                              padding:
+                                  const EdgeInsets.fromLTRB(16, 8, 16, 20),
+                              itemCount: guides.length,
+                              itemBuilder: (context, index) {
+                                return _GuideCard(item: guides[index]);
+                              },
+                            ),
             ),
           ],
         ),
@@ -210,11 +231,17 @@ class _GuideCard extends StatelessWidget {
         children: [
           Row(
             children: [
-              CircleAvatar(
-                radius: 28,
-                backgroundColor: const Color(0xFFE5E7EB),
-                backgroundImage: NetworkImage(item.imageUrl),
-              ),
+            CircleAvatar(
+            radius: 28,
+              backgroundColor: const Color(0xFFE5E7EB),
+              backgroundImage: item.imageUrl.isNotEmpty
+                  ? NetworkImage(item.imageUrl)
+                  : null,
+              child: item.imageUrl.isEmpty
+                  ? const Icon(Icons.person, color: Color(0xFF9CA3AF))
+                  : null,
+            ),
+
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -464,6 +491,53 @@ class _GuideCard extends StatelessWidget {
   }
 }
 
+class _ErrorState extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.wifi_off_rounded,
+              size: 54,
+              color: Color(0xFFCBD5E1),
+            ),
+            const SizedBox(height: 14),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF374151),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRetry,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF2F6BFF),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              child: const Text('다시 시도'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 

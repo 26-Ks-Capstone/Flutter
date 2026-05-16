@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:capstone/config/palette.dart';
 import 'package:capstone/features/ai/ai_planner_provider.dart';
+import 'package:capstone/features/auth/provider/auth_provider.dart';
+import 'package:capstone/features/guide/ui/guide_register_page.dart';
 
 class AIPlannerPage extends StatefulWidget {
   const AIPlannerPage({super.key});
@@ -153,6 +155,8 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
 
   Widget _buildPlanCard(PlanData data) {
     int currentDay = 0;
+    // ★ 여기서 읽어야 _buildPlanCard() 안에서 사용 가능
+    final isGuideMode = context.read<AuthProvider>().isGuideMode;
 
     return Container(
       width: double.infinity,
@@ -184,8 +188,6 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                 int idx = entry.key;
                 var course = entry.value;
                 bool isLast = idx == data.courses.length - 1;
-                
-                // 날짜 헤더 표시 조건 (요청하신 대로 파란색 텍스트)
                 bool showDayHeader = course.dayNumber != currentDay;
                 if (showDayHeader) currentDay = course.dayNumber;
 
@@ -231,7 +233,7 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                               ],
                             ),
                           ),
-                          Text(course.time, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                          Text(course.startTime, style: TextStyle(color: Colors.grey[400], fontSize: 12)),
                         ],
                       ),
                     ),
@@ -248,10 +250,24 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      context.read<AIPlannerProvider>().savePlanner(data).then((success) {
-                        if (success) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('상세 플래너에 저장되었습니다.')));
-                        else ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('저장에 실패했습니다.')));
-                      });
+                      if (isGuideMode) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => GuideRegisterPage(initialPlanData: data),
+                          ),
+                        );
+                      } else {
+                        context.read<AIPlannerProvider>().savePlanner(data).then((success) {
+                          if (success) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('상세 플래너에 저장되었습니다.')));
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(content: Text('저장에 실패했습니다.')));
+                          }
+                        });
+                      }
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF0055FF),
@@ -260,7 +276,7 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child: const Text('+ 상세 플래너에 추가', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(isGuideMode ? '상품 생성' : '+ 상세 플래너에 추가'),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -268,7 +284,7 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                   child: OutlinedButton.icon(
                     onPressed: () => _showResetConfirmDialog(),
                     icon: const Icon(Icons.refresh, size: 16),
-                    label: const Text('다른 일정 생성'),
+                    label: Text(isGuideMode ? '상품 다시 생성하기' : '다른 일정 생성'),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Palette.foreground,
                       side: BorderSide(color: Colors.grey[300]!),
@@ -318,7 +334,11 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
                 color: Palette.inputBackground,
-                borderRadius: const BorderRadius.only(topRight: Radius.circular(15), bottomLeft: Radius.circular(15), bottomRight: Radius.circular(15)),
+                borderRadius: const BorderRadius.only(
+                  topRight: Radius.circular(15),
+                  bottomLeft: Radius.circular(15),
+                  bottomRight: Radius.circular(15),
+                ),
               ),
               child: const _FadingText(),
             ),
@@ -378,7 +398,10 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
       child: Container(
         padding: const EdgeInsets.all(16),
         margin: const EdgeInsets.only(bottom: 8),
-        decoration: BoxDecoration(color: Palette.inputBackground.withOpacity(0.5), borderRadius: BorderRadius.circular(12)),
+        decoration: BoxDecoration(
+          color: Palette.inputBackground.withOpacity(0.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: Row(
           children: [
             Expanded(child: Text(query, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500))),
@@ -391,21 +414,39 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
 
   Widget _buildInputSection(AIPlannerProvider provider) {
     return Container(
-      padding: EdgeInsets.only(left: 20, right: 20, top: 10, bottom: MediaQuery.of(context).padding.bottom + 10),
-      decoration: const BoxDecoration(color: Palette.background, border: Border(top: BorderSide(color: Palette.border, width: 0.5))),
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 10,
+        bottom: MediaQuery.of(context).padding.bottom + 10,
+      ),
+      decoration: const BoxDecoration(
+        color: Palette.background,
+        border: Border(top: BorderSide(color: Palette.border, width: 0.5)),
+      ),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        decoration: BoxDecoration(color: Palette.inputBackground, borderRadius: BorderRadius.circular(30)),
+        decoration: BoxDecoration(
+          color: Palette.inputBackground,
+          borderRadius: BorderRadius.circular(30),
+        ),
         child: Row(
           children: [
             Expanded(
               child: TextField(
                 controller: _messageController,
-                decoration: const InputDecoration(hintText: '여행지, 일정, 취향을 말해주세요...', hintStyle: TextStyle(color: Palette.mutedForeground, fontSize: 14), border: InputBorder.none),
+                decoration: const InputDecoration(
+                  hintText: '여행지, 일정, 취향을 말해주세요...',
+                  hintStyle: TextStyle(color: Palette.mutedForeground, fontSize: 14),
+                  border: InputBorder.none,
+                ),
                 onSubmitted: (value) => _handleSend(provider),
               ),
             ),
-            IconButton(onPressed: () => _handleSend(provider), icon: const Icon(Icons.send_rounded, color: Color(0xFF0055FF))),
+            IconButton(
+              onPressed: () => _handleSend(provider),
+              icon: const Icon(Icons.send_rounded, color: Color(0xFF0055FF)),
+            ),
           ],
         ),
       ),
@@ -430,16 +471,31 @@ class _FadingText extends StatefulWidget {
 class _FadingTextState extends State<_FadingText> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1000))..repeat(reverse: true);
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    )..repeat(reverse: true);
     _animation = Tween<double>(begin: 0.3, end: 1.0).animate(_controller);
   }
+
   @override
-  void dispose() { _controller.dispose(); super.dispose(); }
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(opacity: _animation, child: const Text('사용자님을 위한 여행 일정을 생성 중 이예요.', style: TextStyle(color: Palette.foreground, fontSize: 14, height: 1.4)));
+    return FadeTransition(
+      opacity: _animation,
+      child: const Text(
+        '사용자님을 위한 여행 일정을 생성 중 이예요.',
+        style: TextStyle(color: Palette.foreground, fontSize: 14, height: 1.4),
+      ),
+    );
   }
 }
