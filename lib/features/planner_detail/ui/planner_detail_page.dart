@@ -4,9 +4,6 @@ import 'package:capstone/config/palette.dart';
 import '../provider/planner_detail_provider.dart';
 import 'itinerary_detail_page.dart';
 import '../../main/main_page.dart';
-
-
-// 플레너 상세 페이지
 class PlannerDetailPage extends StatefulWidget {
   const PlannerDetailPage({super.key});
 

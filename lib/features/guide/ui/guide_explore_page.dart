@@ -241,6 +241,7 @@ class _GuideCard extends StatelessWidget {
                   ? const Icon(Icons.person, color: Color(0xFF9CA3AF))
                   : null,
             ),
+
               const SizedBox(width: 12),
               Expanded(
                 child: Column(
@@ -537,7 +538,6 @@ class _ErrorState extends StatelessWidget {
     );
   }
 }
-
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 

@@ -370,7 +370,6 @@ class _GuideDetailPageState extends State<GuideDetailPage> {
       ),
     );
   }
-
   String _formatPrice(int price) {
     final str = price.toString();
     final buffer = StringBuffer();

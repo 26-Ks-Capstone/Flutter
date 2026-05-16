@@ -5,7 +5,6 @@ import 'package:provider/provider.dart';
 import 'package:capstone/config/palette.dart';
 import 'package:capstone/features/auth/ui/splash_page.dart';
 
-// Providers
 import 'package:capstone/features/ai/ai_planner_provider.dart';
 import 'package:capstone/features/auth/provider/auth_provider.dart';
 import 'package:capstone/features/guide/provider/guide_provider.dart';

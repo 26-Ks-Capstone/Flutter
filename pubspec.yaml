@@ -48,7 +48,6 @@ dependencies:
   #firebase_messaging: ^15.0.0
   #stomp_dart_client: ^2.0.0  # WebSocket 채팅용
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

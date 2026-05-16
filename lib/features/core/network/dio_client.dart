@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import '../storage/auth_storage.dart';
 
 class DioClient {
-  static const String _laptopIp = '192.168.81.1';
+  static const String _laptopIp = '13.236.175.235';
   static const String _baseUrl = 'http://$_laptopIp:8080';
 
   static final Dio _dio = _createDio();

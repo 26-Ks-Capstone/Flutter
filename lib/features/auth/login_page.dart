@@ -6,6 +6,7 @@ import 'provider/auth_provider.dart';
 import 'package:capstone/features/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
 import 'signup_page.dart'; // 회원가입 추가
+
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 

@@ -188,7 +188,6 @@ class _AIPlannerPageState extends State<AIPlannerPage> with TickerProviderStateM
                 int idx = entry.key;
                 var course = entry.value;
                 bool isLast = idx == data.courses.length - 1;
-
                 bool showDayHeader = course.dayNumber != currentDay;
                 if (showDayHeader) currentDay = course.dayNumber;
 

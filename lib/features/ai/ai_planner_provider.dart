@@ -5,6 +5,25 @@ import 'package:dio/dio.dart';
 
 enum MessageRole { ai, user }
 
+class PlanData {
+  final String title;
+  final String region;
+  final String startDate;
+  final String endDate;
+  final List<PlanCourse> courses;
+  final Map<String, dynamic> originalJson;
+
+
+  PlanData({
+    required this.title,
+    required this.region,
+    required this.startDate,
+    required this.endDate,
+    required this.courses,
+    required this.originalJson,
+  });
+}
+
 class ChatMessage {
   final String content;
   final MessageRole role;
@@ -14,24 +33,6 @@ class ChatMessage {
     required this.content,
     required this.role,
     this.planData,
-  });
-}
-
-class PlanData {
-  final String title;
-  final String region;
-  final String startDate;
-  final String endDate;
-  final List<PlanCourse> courses;
-  final Map<String, dynamic> originalJson;
-
-  PlanData({
-    required this.title,
-    required this.region,
-    required this.startDate,
-    required this.endDate,
-    required this.courses,
-    required this.originalJson,
   });
 }
 
@@ -170,7 +171,6 @@ class AIPlannerProvider with ChangeNotifier {
       notifyListeners();
     }
   }
-
   // 사용자 모드: 상세 플래너 저장
   Future<bool> savePlanner(PlanData data) async {
     try {

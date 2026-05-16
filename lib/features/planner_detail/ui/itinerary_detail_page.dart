@@ -367,43 +367,6 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
 
   // ==================== UI ====================
 
-  @override
-  Widget build(BuildContext context) {
-    final detailProvider = context.watch<ItineraryDetailProvider>();
-
-    return Scaffold(
-      backgroundColor: Palette.background,
-      body: detailProvider.isLoading
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2962FF)))
-          : detailProvider.errorMessage != null
-          ? _buildErrorState(detailProvider.errorMessage!)
-          : detailProvider.detail == null
-          ? const Center(child: Text('일정 정보를 불러올 수 없습니다.'))
-          : _buildContent(detailProvider.detail!),
-      bottomNavigationBar: detailProvider.detail != null
-          ? _buildBottomBar(detailProvider.detail!)
-          : null,
-    );
-  }
-
-  Widget _buildErrorState(String message) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
-          const SizedBox(height: 16),
-          Text(message, style: const TextStyle(color: Palette.mutedForeground)),
-          const SizedBox(height: 24),
-          ElevatedButton(
-            onPressed: () => context.read<ItineraryDetailProvider>().fetchItineraryDetail(widget.itineraryId),
-            child: const Text('다시 시도'),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildContent(ItineraryDetailResponse detail) {
     final displayItems = _isEditMode ? _editableItems : detail.details;
 
@@ -546,6 +509,43 @@ class _ItineraryDetailPageState extends State<ItineraryDetailPage> {
         ),
         const SliverToBoxAdapter(child: SizedBox(height: 100)),
       ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final detailProvider = context.watch<ItineraryDetailProvider>();
+
+    return Scaffold(
+      backgroundColor: Palette.background,
+      body: detailProvider.isLoading
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFF2962FF)))
+          : detailProvider.errorMessage != null
+          ? _buildErrorState(detailProvider.errorMessage!)
+          : detailProvider.detail == null
+          ? const Center(child: Text('일정 정보를 불러올 수 없습니다.'))
+          : _buildContent(detailProvider.detail!),
+      bottomNavigationBar: detailProvider.detail != null
+          ? _buildBottomBar(detailProvider.detail!)
+          : null,
+    );
+  }
+
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, color: Colors.redAccent, size: 48),
+          const SizedBox(height: 16),
+          Text(message, style: const TextStyle(color: Palette.mutedForeground)),
+          const SizedBox(height: 24),
+          ElevatedButton(
+            onPressed: () => context.read<ItineraryDetailProvider>().fetchItineraryDetail(widget.itineraryId),
+            child: const Text('다시 시도'),
+          ),
+        ],
+      ),
     );
   }
 

@@ -11,7 +11,6 @@ class ItineraryDetailProvider with ChangeNotifier {
 
   String? _errorMessage;
   String? get errorMessage => _errorMessage;
-
   void updateLocalDetails(List<ItineraryDetailItem> updatedItems) {
     if (_detail == null) return;
     _detail = ItineraryDetailResponse(
@@ -52,6 +51,3 @@ class ItineraryDetailProvider with ChangeNotifier {
 
     notifyListeners();
   }
-
-
-
