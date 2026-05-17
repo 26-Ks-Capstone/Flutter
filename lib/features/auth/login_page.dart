@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:capstone/config/palette.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:flutter_svg/flutter_svg.dart'; // 💡 구글 로고용 SVG 패키지 임포트
 import '../main/main_page.dart';
 import 'provider/auth_provider.dart';
 import 'package:capstone/features/core/network/dio_client.dart';
 import 'package:dio/dio.dart';
-import 'signup_page.dart'; // 회원가입 추가
+import 'signup_page.dart';
+import 'ui/google_signup_page.dart';
+import 'dart:io';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,6 +22,21 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _initGoogleSignIn();
+  }
+
+  Future<void> _initGoogleSignIn() async {
+    await GoogleSignIn.instance.initialize(
+      clientId: Platform.isIOS
+          ? '275653224499-7l4pv159esnl7oe41dlv2b0l0pukn571.apps.googleusercontent.com'
+          : null,
+      serverClientId: '275653224499-v4p4mheg008rq9b8ac538eraceaqmfis.apps.googleusercontent.com',
+    );
+  }
 
   Future<void> _handleLogin() async {
     final String email = _emailController.text.trim();
@@ -40,13 +59,20 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200) {
         final responseData = response.data;
-        // [수정] 백엔드 응답 DTO 규격(AuthData)에 맞춰 Provider에 전달
         if (responseData['status'] == 'success' && responseData['data'] != null) {
           final authData = responseData['data'];
-          await context.read<AuthProvider>().login(authData);
 
           if (!mounted) return;
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainPage()));
+          final bool isSuccess = await context.read<AuthProvider>().login(authData);
+
+          if (!mounted) return;
+          if (isSuccess) {
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainPage()));
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('로그인 세션 생성에 실패했습니다. 유저 데이터를 확인하세요.')),
+            );
+          }
         }
       }
     } on DioException catch (e) {
@@ -64,8 +90,66 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _socialLogin() {
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainPage()));
+  Future<void> _handleGoogleLogin() async {
+    setState(() => _isLoading = true);
+    try {
+      final GoogleSignInAccount googleUser = await GoogleSignIn.instance.authenticate(
+        scopeHint: ['email', 'profile'],
+      );
+
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+      final String? idToken = googleAuth.idToken;
+
+      if (idToken == null) {
+        throw Exception('Google ID Token을 가져올 수 없습니다.');
+      }
+
+      final response = await DioClient.instance.post(
+        '/api/v1/auth/google',
+        data: {'idToken': idToken},
+      );
+
+      if (response.statusCode == 200) {
+        final responseData = response.data;
+        if (responseData['status'] == 'success' && responseData['data'] != null) {
+          final authData = responseData['data'];
+          final bool isNewUser = authData['isNewUser'] ?? authData['newUser'] ?? false;
+
+          if (!mounted) return;
+
+          if (isNewUser) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => GoogleSignUpPage(
+                  email: authData['email'] ?? googleUser.email,
+                  profileImageUrl: authData['profileImageUrl'] ?? googleUser.photoUrl,
+                ),
+              ),
+            );
+          } else {
+            final bool isSuccess = await context.read<AuthProvider>().login(authData);
+
+            if (!mounted) return;
+            if (isSuccess) {
+              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainPage()));
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('구글 인증 세션 생성에 실패했습니다. 백엔드 DTO 규격을 확인하세요.')),
+              );
+            }
+          }
+        }
+      }
+    } catch (e) {
+      if (!mounted) return;
+      if (e is GoogleSignInException && e.code == GoogleSignInExceptionCode.canceled) {
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Google 로그인 실패: $e')));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -97,7 +181,10 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Container(
                     padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(color: Colors.white.withOpacity(0.2), shape: BoxShape.circle),
+                    decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        shape: BoxShape.circle
+                    ),
                     child: const Icon(Icons.location_on, color: Colors.white, size: 40),
                   ),
                   const SizedBox(height: 20),
@@ -153,9 +240,9 @@ class _LoginPageState extends State<LoginPage> {
                       height: 56,
                       child: ElevatedButton.icon(
                         onPressed: _isLoading ? null : _handleLogin,
-                        icon: _isLoading 
-                          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                          : const Icon(Icons.auto_awesome, size: 20),
+                        icon: _isLoading
+                            ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                            : const Icon(Icons.auto_awesome, size: 20),
                         label: Text(_isLoading ? '로그인 중...' : '로그인', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF0055FF),
@@ -168,32 +255,46 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
                     const Row(children: [Expanded(child: Divider()), Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: Text('또는', style: TextStyle(color: Colors.grey, fontSize: 12))), Expanded(child: Divider())]),
                     const SizedBox(height: 24),
-                    _buildSocialButton(label: '카카오로 시작하기', icon: Icons.chat_bubble, color: const Color(0xFFFEE500), textColor: Colors.black87),
-                    const SizedBox(height: 12),
-                    _buildSocialButton(label: '네이버로 시작하기', icon: Icons.text_snippet, color: const Color(0xFF03C75A), textColor: Colors.white),
-                    const SizedBox(height: 12),
-                    _buildSocialButton(label: 'Google로 시작하기', icon: Icons.g_mobiledata, color: Palette.secondary, textColor: Colors.black87, isGoogle: true),
-                    const SizedBox(height: 32),
-                Center(
-                  child: GestureDetector(
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => const SignUpPage()),
+
+                    // 카카오 로그인 (공식 노란색 적용 + 테두리 절대 없음)
+                    _buildSocialButton(
+                        label: '카카오로 시작하기',
+                        imageAssetPath: 'assets/icons/kakao/kakao_logo.png',
+                        color: const Color(0xFFFEE500),
+                        textColor: const Color(0xFF3C1E1E),
+                        onPressed: () {}
                     ),
-                    child: RichText(
-                      text: const TextSpan(
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                        children: [
-                          TextSpan(text: '아직 계정이 없으신가요? '),
-                          TextSpan(
-                            text: '회원가입',
-                            style: TextStyle(color: Color(0xFF0055FF), fontWeight: FontWeight.bold),
+                    const SizedBox(height: 12),
+
+                    // 구글 로그인 (💡 색상을 원래 쓰던 Palette.secondary로 원상 복구!)
+                    _buildSocialButton(
+                        label: 'Google로 시작하기',
+                        imageAssetPath: 'assets/icons/google/google_logo.svg',
+                        color: Palette.secondary, // 원래 색깔로 롤백!
+                        textColor: Colors.black87,
+                        onPressed: _handleGoogleLogin
+                    ),
+                    const SizedBox(height: 32),
+                    Center(
+                      child: GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const SignUpPage()),
+                        ),
+                        child: RichText(
+                          text: const TextSpan(
+                            style: TextStyle(color: Colors.grey, fontSize: 14),
+                            children: [
+                              TextSpan(text: '아직 계정이 없으신가요? '),
+                              TextSpan(
+                                text: '회원가입',
+                                style: TextStyle(color: Color(0xFF0055FF), fontWeight: FontWeight.bold),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                     ),
-                  ),
-                ),
                   ],
                 ),
               ),
@@ -204,18 +305,47 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  Widget _buildSocialButton({required String label, required IconData icon, required Color color, required Color textColor, bool isGoogle = false}) {
+  // 💡 테두리를 100% 제거하기 위해 완전히 면(Surface) 기반인 ElevatedButton으로 변경
+  Widget _buildSocialButton({
+    required String label,
+    String? imageAssetPath,
+    IconData? icon,
+    required Color color,
+    required Color textColor,
+    required VoidCallback onPressed,
+  }) {
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: OutlinedButton.icon(
-        onPressed: _socialLogin,
-        icon: Icon(icon, color: textColor),
-        label: Text(label, style: TextStyle(color: textColor, fontWeight: FontWeight.bold)),
-        style: OutlinedButton.styleFrom(
+      child: ElevatedButton(
+        onPressed: _isLoading ? null : onPressed,
+        style: ElevatedButton.styleFrom(
           backgroundColor: color,
-          side: isGoogle ? const BorderSide(color: Palette.border) : BorderSide.none,
+          foregroundColor: textColor,
+          elevation: 0, // 🛠️ 버튼 그림자 완전 제거
+          shadowColor: Colors.transparent, // 🛠️ 잔상 그림자까지 투명화하여 테두리와 요철을 원천 차단
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+        ),
+        child: Row(
+          children: [
+            if (imageAssetPath != null)
+              imageAssetPath.endsWith('.svg')
+                  ? SvgPicture.asset(imageAssetPath, width: 22, height: 22)
+                  : Image.asset(imageAssetPath, width: 22, height: 22)
+            else if (icon != null)
+              Icon(icon, color: textColor, size: 22),
+
+            Expanded(
+              child: Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(color: textColor, fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+            ),
+
+            const SizedBox(width: 22),
+          ],
         ),
       ),
     );

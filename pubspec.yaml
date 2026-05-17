@@ -34,6 +34,7 @@ dependencies:
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+  flutter_svg: ^2.0.10
 
   # 여기에 provider를 추가해줘! (줄 간격 주의)
   provider: ^6.1.1
@@ -41,9 +42,10 @@ dependencies:
   flutter_secure_storage: ^9.0.0
 
   dio: ^5.4.1  # dio 패키지 추가
-  http: ^1.2.1
+  http: ^1.6.0
 
   stomp_dart_client: ^2.0.0
+  google_sign_in: ^7.2.0
   #firebase_core: ^3.0.0
   #firebase_messaging: ^15.0.0
   #stomp_dart_client: ^2.0.0  # WebSocket 채팅용
@@ -66,7 +68,9 @@ dev_dependencies:
 
 
 flutter:
-
+  assets:
+    - assets/icons/kakao/   # 💡 카카오 세부 폴더 등록!
+    - assets/icons/google/  # 💡 구글 세부 폴더 등록!
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.
